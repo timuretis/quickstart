@@ -1,0 +1,6 @@
+/target/
+.settings
+.project
+.classpath
+cluster-ha-singleton/.settings
+cluster-ha-singleton/.project
