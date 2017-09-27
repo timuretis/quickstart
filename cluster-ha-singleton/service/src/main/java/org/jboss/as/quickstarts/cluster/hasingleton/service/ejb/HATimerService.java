@@ -29,6 +29,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
+
 /**
  * <p>A service to start schedule-timer as HASingleton timer in a clustered environment.
  * The {@link HATimerServiceActivator} will ensure that the timer is initialized only once in a cluster.</p>
@@ -54,12 +55,14 @@ public class HATimerService implements Service<String> {
     /**
      * @return the name of the server node
      */
-    public String getValue() throws IllegalStateException, IllegalArgumentException {
+    @Override
+	public String getValue() throws IllegalStateException, IllegalArgumentException {
         LOGGER.info(String.format("%s is %s at %s", HATimerService.class.getSimpleName(), (started.get() ? "started" : "not started"), System.getProperty("jboss.node.name")));
         return "";
     }
 
-    public void start(StartContext arg0) throws StartException {
+    @Override
+	public void start(StartContext arg0) throws StartException {
         if (!started.compareAndSet(false, true)) {
             throw new StartException("The service is still started!");
         }
@@ -68,21 +71,24 @@ public class HATimerService implements Service<String> {
         final String node = System.getProperty("jboss.node.name");
         try {
             InitialContext ic = new InitialContext();
-            ((Scheduler) ic.lookup("global/jboss-cluster-ha-singleton-service/SchedulerBean!org.jboss.as.quickstarts.cluster.hasingleton.service.ejb.Scheduler"))
+//            ((Scheduler) ic.lookup("global/jboss-cluster-ha-singleton-service/SchedulerBean!org.jboss.as.quickstarts.cluster.hasingleton.service.ejb.Scheduler"))
+            ((Scheduler) ic.lookup("global/wildfly-cluster-ha-singleton-service/SchedulerBean!org.jboss.as.quickstarts.cluster.hasingleton.service.ejb.Scheduler"))
                 .initialize("HASingleton timer @" + node + " " + new Date());
         } catch (NamingException e) {
             throw new StartException("Could not initialize timer", e);
         }
     }
 
-    public void stop(StopContext arg0) {
+    @Override
+	public void stop(StopContext arg0) {
         if (!started.compareAndSet(true, false)) {
             LOGGER.warning("The service '" + this.getClass().getName() + "' is not active!");
         } else {
             LOGGER.info("Stop HASingleton timer service '" + this.getClass().getName() + "'");
             try {
                 InitialContext ic = new InitialContext();
-                ((Scheduler) ic.lookup("global/jboss-cluster-ha-singleton-service/SchedulerBean!org.jboss.as.quickstarts.cluster.hasingleton.service.ejb.Scheduler")).stop();
+//                ((Scheduler) ic.lookup("global/jboss-cluster-ha-singleton-service/SchedulerBean!org.jboss.as.quickstarts.cluster.hasingleton.service.ejb.Scheduler")).stop();
+                ((Scheduler) ic.lookup("global/wildfly-cluster-ha-singleton-service/SchedulerBean!org.jboss.as.quickstarts.cluster.hasingleton.service.ejb.Scheduler")).stop();
             } catch (NamingException e) {
                 LOGGER.info("Could not stop timer:" + e.getMessage());
             }
